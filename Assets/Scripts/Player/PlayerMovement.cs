@@ -4,13 +4,13 @@
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement requirements")]
-    public Camera playerCamera;
-    public AudioSource footstepSource;
-    public AudioClip[] footstepClips;
-    public Transform cameraTransform;
-    public Transform groundCheckObj;
-    public LayerMask groundMask;
-    public float normalFOV = 60f;
+    [SerializeField] Camera playerCamera;
+    [SerializeField] AudioSource footstepSource;
+    [SerializeField] AudioClip[] footstepClips;
+    [SerializeField] Transform cameraTransform;
+    [SerializeField] Transform groundCheckObj;
+    [SerializeField] LayerMask groundMask;
+    [SerializeField] float normalFOV = 60f;
 
     // Camera properties (Don't change anything!)
     readonly float ratioFOV = 10f;
@@ -264,10 +264,10 @@ public class PlayerMovement : MonoBehaviour
     }
     void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 200, 20), "Health: " + Mathf.FloorToInt(playerStats.currentHealth) + " / " + playerStats.maxHealth);
-        GUI.Label(new Rect(10, 30, 200, 40), "Stamina: " + Mathf.FloorToInt(playerStats.currentStamina) + " / " + playerStats.maxStamina);
-        GUI.Label(new Rect(10, 50, 200, 60), $"Strength: {playerStats.strength}");
-        GUI.Label(new Rect(10, 70, 200, 80), $"Speed: {playerStats.runSpeed}");
-        GUI.Label(new Rect(10, 90, 200, 100), $"Range: {playerStats.range}");
+        GUI.Label(new Rect(20, 130, 200, 20), "Health: " + Mathf.FloorToInt(playerStats.currentHealth) + " / " + playerStats.maxHealth);
+        GUI.Label(new Rect(20, 150, 200, 40), "Stamina: " + Mathf.FloorToInt(playerStats.currentStamina) + " / " + playerStats.maxStamina);
+        GUI.Label(new Rect(20, 170, 200, 60), $"Strength: {playerStats.strength}");
+        GUI.Label(new Rect(20, 190, 200, 80), $"Speed: {playerStats.runSpeed}");
+        GUI.Label(new Rect(20, 210, 200, 100), $"Range: {playerStats.range}");
     }
 }

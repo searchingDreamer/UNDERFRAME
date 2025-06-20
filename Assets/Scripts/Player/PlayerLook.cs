@@ -18,7 +18,6 @@ public class PlayerLook : MonoBehaviour
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-
         targetXRotation = 0f;
         targetYRotation = playerBody.eulerAngles.y;
     }
