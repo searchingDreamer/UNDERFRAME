@@ -9,6 +9,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject valuableItems;
     [SerializeField] float itemCollisionDelay = 1f;
 
+    [SerializeField] Camera minimapCamera;
+
     void Awake()
     {
         if (Instance == null)
@@ -37,9 +39,14 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < valuableItems.transform.childCount; i++)
         {
-            ValuableItem item = valuableItems.transform.GetChild(i).GetComponent<ValuableItem>();
-
+            GameObject itemObj = valuableItems.transform.GetChild(i).gameObject;
+            
+            ValuableItem item = itemObj.GetComponent<ValuableItem>();
             item.ActivateCollision();
+
+            GameObject minimapCanvas = itemObj.transform.Find("Canvas").gameObject;
+            Canvas canvas = minimapCanvas.GetComponent<Canvas>();
+            canvas.worldCamera = minimapCamera;
         }
     }
 }
