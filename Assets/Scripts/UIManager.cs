@@ -7,6 +7,8 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
 
+    [SerializeField] GameObject UI;
+
     [Header("Item")]
     [SerializeField] TextMeshProUGUI itemInfo;
     [SerializeField] TextMeshProUGUI itemInfoShadow;
@@ -23,11 +25,19 @@ public class UIManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI bankBalance;
     [SerializeField] TextMeshProUGUI bankBalanceShadow;
 
+    //[Header("Shop")]
+    //[SerializeField] TextMeshProUGUI price;
+    //[SerializeField] TextMeshProUGUI priceShadow;
+
     [Header("Crosshair")]
     [SerializeField] UnityEngine.UI.Image crosshair;
     [SerializeField] float normalCrosshairSize = 100f;
     [SerializeField] float enlargedCrosshairSize = 300f;
     [SerializeField] float crosshairLerpSpeed = 8f;
+
+    [Header("Minimap")]
+    [SerializeField] GameObject minimap;
+
     private enum CrosshairStates { Normal, Enlarged, Normalizing, Enlarging };
     private CrosshairStates crosshairState = CrosshairStates.Normal;
 
@@ -49,6 +59,8 @@ public class UIManager : MonoBehaviour
         Color c1 = itemInfo.color; Color c2 = itemInfoShadow.color;
         c1.a = c2.a = 0;
         itemInfo.color = c1; itemInfoShadow.color = c2;
+
+        DontDestroyOnLoad(UI);
     }
 
     private void Update()
@@ -225,4 +237,8 @@ public class UIManager : MonoBehaviour
         itemInfo.gameObject.SetActive(false);
     }
 
+    public void ActivateMinimap(bool state)
+    {
+        minimap.SetActive(state);
+    }
 }

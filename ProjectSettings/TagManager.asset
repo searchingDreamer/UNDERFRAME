@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Item
   - Boost
+  - Button
   layers:
   - Default
   - TransparentFX
@@ -14,7 +15,7 @@ TagManager:
   - Water
   - UI
   - HoldLayer
-  - Items
+  - Interactable
   - Destroy
   - Minimap
   - 

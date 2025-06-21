@@ -5,12 +5,17 @@ using UnityEngine;
 public class Bank : MonoBehaviour
 {
     List<GameObject> items = new List<GameObject>();
-    int balance = 0;
+    static int balance = 0;
+
+    private void Awake()
+    {
+        balance = 0;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -52,5 +57,10 @@ public class Bank : MonoBehaviour
         }
 
         UIManager.Instance.UpdateBankBalance(balance);
+    }
+
+    static public int GetBalance()
+    {
+        return balance;
     }
 }

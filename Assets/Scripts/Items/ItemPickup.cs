@@ -15,22 +15,24 @@ public class ItemPickup : MonoBehaviour
     private float holdDistanceDontChange = 2f;
     [SerializeField] float rotationSpeed = 100f;
     [SerializeField] float forceStrenght = 300f;
-    private float sensetivityLose;
+    private float sensetivityLose = 1;
     [SerializeField] float sensetivityLoseCoef = 1f;
 
     private GameObject heldObj = null;
     private Rigidbody heldRb = null;
+    private GameObject heldCanvas = null;
     private ObjectType heldObjType;
 
     private Vector3 holdPoint;
     private bool isRotating = false;
     private Quaternion targetRotation;
+    private Quaternion heldCanvasRotation;
 
     private LayerMask itemLayer;
 
     void Start()
     {
-        itemLayer = LayerMask.GetMask("Items");
+        itemLayer = LayerMask.GetMask("Interactable");
     }
 
     void Update()
@@ -78,6 +80,8 @@ public class ItemPickup : MonoBehaviour
                         {
                             heldObj = obj;
                             heldRb = heldObj.GetComponent<Rigidbody>();
+                            heldCanvas = heldObj.transform.GetChild(0).gameObject; 
+                            heldCanvasRotation = heldCanvas.transform.rotation;
                             ValuableItem item = heldObj.GetComponent<ValuableItem>();
 
                             if (heldRb != null)
@@ -134,12 +138,26 @@ public class ItemPickup : MonoBehaviour
                         BoostItem boostItem = obj.GetComponent<BoostItem>();
 
                         UIManager.Instance.ActivateItemInfo(true);
-                        UIManager.Instance.ShowCustomItemInfo(boostItem.GetDisplayName());
+                        if(GameManager.Instance.GetState() == GameState.Shop)
+                        {
+                            string displayInfo = boostItem.GetDisplayName();
+                            displayInfo += $" ($ {boostItem.GetPrice()})";
+                            UIManager.Instance.ShowCustomItemInfo(displayInfo);
+                        }
+                        else UIManager.Instance.ShowCustomItemInfo(boostItem.GetDisplayName());
 
                         if (Input.GetMouseButtonDown(0))
                         {
+                            if (GameManager.Instance.GetState() == GameState.Shop)
+                            {
+                                if (!GameManager.Instance.TryBuy(boostItem)) return;
+                            }
+
                             heldObj = obj;
                             heldRb = heldObj.GetComponent<Rigidbody>();
+                            //heldCanvas = heldObj.transform.GetChild(0).gameObject;
+                            //heldCanvasRotation = heldCanvas.transform.rotation;
+
 
                             if (heldRb != null)
                             {
@@ -163,6 +181,14 @@ public class ItemPickup : MonoBehaviour
                             heldObjType = ObjectType.Boost;
                         }
 
+                        break;
+                    }
+                case "Button":
+                    {
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            GameManager.Instance.EndLevel();
+                        }
                         break;
                     }
             }
@@ -227,7 +253,10 @@ public class ItemPickup : MonoBehaviour
                 targetRotation *= deltaX * deltaY;
             }
 
-            heldRb.MoveRotation(Quaternion.Slerp(heldRb.rotation, targetRotation, Time.fixedDeltaTime * 10f));
+            Quaternion deltaRotation = Quaternion.Slerp(heldRb.rotation, targetRotation, Time.fixedDeltaTime * 10f);
+            heldRb.MoveRotation(deltaRotation);
+            //heldCanvas.transform.localRotation = Quaternion.Euler(-heldObj.transform.rotation.eulerAngles);
+            //heldCanvas.transform.Rotate(-deltaRotation.eulerAngles, Space.World);
         }
     }
 
@@ -240,6 +269,13 @@ public class ItemPickup : MonoBehaviour
             heldRb.angularDrag = 0.05f;
         }
 
+        if (heldObjType == ObjectType.Item)
+        {
+            ValuableItem item = heldObj.GetComponent<ValuableItem>();
+            item.OnDestroy -= DropItem;
+            playerLook.mouseSensitivity /= sensetivityLose;
+        }
+
         heldObj = null;
         heldRb = null;
         isRotating = false;
@@ -249,8 +285,6 @@ public class ItemPickup : MonoBehaviour
 
         UIManager.Instance.ActivateItemInfo(false);
         UIManager.Instance.NormalCrosshair();
-
-        if(heldObjType == ObjectType.Item) playerLook.mouseSensitivity /= sensetivityLose;
     }
 
     void UseBoostItem(BoostItem boost)
