@@ -15,11 +15,16 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [SerializeField] GameObject valuableItems;
+    private GameObject valuableItems;
     [SerializeField] float itemCollisionDelay = 1f;
 
     [SerializeField] Camera minimapCamera;
+    [SerializeField] Camera fullmapCamera;
     [SerializeField] GameObject player;
+
+    [SerializeField] GameObject minimapMarkersCanvas;
+    [SerializeField] GameObject p_lightItemMark; // p_ - prefab
+    [SerializeField] GameObject p_heavyItemMark; // p_ - prefab
 
     private int totalCash = 0;
 
@@ -40,6 +45,8 @@ public class GameManager : MonoBehaviour
     {
         state = GameState.Initializing;
         DontDestroyOnLoad(player);
+        DontDestroyOnLoad(fullmapCamera);
+        DontDestroyOnLoad(minimapMarkersCanvas);
         SceneManager.sceneLoaded += OnSceneLoaded;
         EndLevel();
     }
@@ -60,10 +67,26 @@ public class GameManager : MonoBehaviour
             
             ValuableItem item = itemObj.GetComponent<ValuableItem>();
             item.ActivateCollision();
+        }
+    }
 
-            GameObject minimapCanvas = itemObj.transform.Find("Canvas").gameObject;
-            Canvas canvas = minimapCanvas.GetComponent<Canvas>();
-            canvas.worldCamera = minimapCamera;
+    // false - minimap camera, true - fullmap camera 
+    public void SwitchEventCamera(bool value)
+    {    
+        minimapCamera.enabled = !value;
+        fullmapCamera.enabled = value;
+
+
+        Canvas playerCanvas = player.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
+        if (value)
+        {
+            playerCanvas.worldCamera = fullmapCamera;
+            minimapMarkersCanvas.GetComponent<Canvas>().worldCamera = fullmapCamera;
+        }
+        else
+        {
+            playerCanvas.worldCamera = minimapCamera;
+            minimapMarkersCanvas.GetComponent<Canvas>().worldCamera = minimapCamera;
         }
     }
 
@@ -94,6 +117,7 @@ public class GameManager : MonoBehaviour
             valuableItems = GameObject.Find("Items").gameObject;
             UIManager.Instance.ActivateMinimap(true);
             StartCoroutine(ActivateCollisions(itemCollisionDelay));
+            InitializeItemMarkers();
         }
         else if (scene.name == "shop")
         {
@@ -124,6 +148,31 @@ public class GameManager : MonoBehaviour
         else
         {
             return false;
+        }
+    }
+
+    private void InitializeItemMarkers()
+    {
+        for (int i = 0; i < valuableItems.transform.childCount; i++)
+        {
+            ValuableItem item = valuableItems.transform.GetChild(i).gameObject.GetComponent<ValuableItem>();
+            ItemType type = item.GetItemType();
+            GameObject marker = null;
+
+            switch(type)
+            {
+                case ItemType.Light:
+                    marker = Instantiate(p_lightItemMark, Vector3.zero, Quaternion.identity);
+                    marker.gameObject.GetComponent<RectTransform>().rotation = Quaternion.Euler(new Vector3(90, 0, 0));
+                    break;
+                case ItemType.Heavy:
+                    marker = Instantiate(p_heavyItemMark, Vector3.zero, Quaternion.identity);
+                    marker.gameObject.GetComponent<RectTransform>().rotation = Quaternion.Euler(new Vector3(90, 0, 0));
+                    break;
+            }
+
+            marker.transform.SetParent(minimapMarkersCanvas.transform, false);
+            item.SetMinimapMarker(marker);
         }
     }
 }

@@ -3,6 +3,12 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+public enum ItemType
+{
+    Light,
+    Heavy
+}
+
 public class ValuableItem : MonoBehaviour
 {
     [SerializeField] int cost = 1000;
@@ -16,6 +22,10 @@ public class ValuableItem : MonoBehaviour
     public event Action OnDestroy;
     
     private bool detectCollisions = false;
+
+    private GameObject minimapMarker;
+
+    [SerializeField] ItemType type;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -43,6 +53,13 @@ public class ValuableItem : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        if (minimapMarker != null)
+        {
+            minimapMarker.gameObject.transform.position = gameObject.transform.position + Vector3.up * 30;
+        }
+    }
     public int GetCost()
     {
         return cost;
@@ -73,5 +90,16 @@ public class ValuableItem : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Destroy");
         yield return new WaitForSeconds(destroyDelay);
         Destroy(gameObject);
+    }
+
+    public void SetMinimapMarker(GameObject marker)
+    {
+        minimapMarker = marker;
+        minimapMarker.gameObject.transform.position = gameObject.transform.position + Vector3.up * 30;
+    }
+
+    public ItemType GetItemType()
+    {
+        return type;
     }
 }

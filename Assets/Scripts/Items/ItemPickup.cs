@@ -80,8 +80,8 @@ public class ItemPickup : MonoBehaviour
                         {
                             heldObj = obj;
                             heldRb = heldObj.GetComponent<Rigidbody>();
-                            heldCanvas = heldObj.transform.GetChild(0).gameObject; 
-                            heldCanvasRotation = heldCanvas.transform.rotation;
+                            //heldCanvas = heldObj.transform.GetChild(0).gameObject; 
+                            //heldCanvasRotation = heldCanvas.transform.rotation;
                             ValuableItem item = heldObj.GetComponent<ValuableItem>();
 
                             if (heldRb != null)

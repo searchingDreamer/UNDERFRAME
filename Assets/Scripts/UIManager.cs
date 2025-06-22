@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -37,6 +38,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Minimap")]
     [SerializeField] GameObject minimap;
+    [SerializeField] GameObject fullmap;
 
     private enum CrosshairStates { Normal, Enlarged, Normalizing, Enlarging };
     private CrosshairStates crosshairState = CrosshairStates.Normal;
@@ -61,11 +63,21 @@ public class UIManager : MonoBehaviour
         itemInfo.color = c1; itemInfoShadow.color = c2;
 
         DontDestroyOnLoad(UI);
+
+        SceneManager.sceneLoaded += (Scene scene, LoadSceneMode mode) => { GameManager.Instance.SwitchEventCamera(false); };
     }
 
     private void Update()
     {
         UpdatePlayerStats();
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            ChangeMinimap(true);
+        }
+        else if(Input.GetKeyUp(KeyCode.Tab))
+        {
+            ChangeMinimap(false);
+        }
     }
 
     public void ActivateItemInfo(bool state, bool smooth = true)
@@ -240,5 +252,22 @@ public class UIManager : MonoBehaviour
     public void ActivateMinimap(bool state)
     {
         minimap.SetActive(state);
+    }
+
+    // false - change to minimap, true - to fullmap
+    private void ChangeMinimap(bool value)
+    {
+        GameManager.Instance.SwitchEventCamera(value);
+
+        if (value)
+        {
+            minimap.SetActive(false);
+            fullmap.SetActive(true);
+        }
+        else
+        {
+            minimap.SetActive(true);
+            fullmap.SetActive(false);
+        }
     }
 }
