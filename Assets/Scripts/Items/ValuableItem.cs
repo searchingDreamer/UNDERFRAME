@@ -90,6 +90,7 @@ public class ValuableItem : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Destroy");
         yield return new WaitForSeconds(destroyDelay);
         Destroy(gameObject);
+        if(minimapMarker != null) Destroy(minimapMarker);
     }
 
     public void SetMinimapMarker(GameObject marker)

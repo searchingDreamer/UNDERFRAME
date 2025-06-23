@@ -13,7 +13,7 @@ public class PlayerStats : MonoBehaviour
 
     [Header("Movement Speeds")]
     public float maxStamina = 40f;
-    public float runSpeed = 5f;
+    public float speed = 5f;
 
     void Start()
     {
@@ -28,7 +28,7 @@ public class PlayerStats : MonoBehaviour
             case "range": range = value; return true;
             case "maxhealth": maxHealth = value; return true;
             case "maxstamina": maxStamina = value; return true;
-            case "runspeed": runSpeed = value; return true;
+            case "runspeed": speed = value; return true;
             case "stamina": currentStamina = value; return true;
 
             default: return false;

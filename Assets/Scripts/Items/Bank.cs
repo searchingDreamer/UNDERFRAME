@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Bank : MonoBehaviour
 {
-    List<GameObject> items = new List<GameObject>();
+    static List<GameObject> items = new List<GameObject>();
     static int balance = 0;
 
     private void Awake()
@@ -62,5 +62,10 @@ public class Bank : MonoBehaviour
     static public int GetBalance()
     {
         return balance;
+    }
+
+    static public List<GameObject> GetItems()
+    {
+        return items;
     }
 }

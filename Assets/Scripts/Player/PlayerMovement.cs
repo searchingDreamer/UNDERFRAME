@@ -141,10 +141,10 @@ public class PlayerMovement : MonoBehaviour
         bool wantsToRun = Input.GetKey(KeyCode.LeftShift) && !isCrouching && move.magnitude > 0.1f;
         if (wantsToRun && playerStats.currentStamina > 0f)
         {
-            currentSpeed = playerStats.runSpeed;
+            currentSpeed = playerStats.speed;
             lastRunTime = Time.time;
         }
-        else currentSpeed = isCrouching ? 1.25f : 2.5f;
+        else currentSpeed = isCrouching ? playerStats.speed / 4 : playerStats.speed / 2;
 
         if (Input.GetButtonDown("Jump") && isGrounded && !isCrouching)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
@@ -165,7 +165,7 @@ public class PlayerMovement : MonoBehaviour
                 float volume = Random.Range(0.8f, 1f);
                 footstepSource.PlayOneShot(clip, volume);
 
-                float stepSpeedModifier = currentSpeed == playerStats.runSpeed ? 0.5f : (currentSpeed == 1.25f ? 1.2f : 1f);
+                float stepSpeedModifier = currentSpeed == playerStats.speed ? 0.5f : (currentSpeed == playerStats.speed / 4 ? 1.2f : 1f);
                 footstepTimer = footstepRate * stepSpeedModifier;
             }
         }
@@ -222,7 +222,7 @@ public class PlayerMovement : MonoBehaviour
         float freq;
         float amp;
 
-        if (currentSpeed == playerStats.runSpeed)
+        if (currentSpeed == playerStats.speed)
         {
             freq = bobFrequencyRun;
             amp = bobAmplitudeRun;
@@ -262,12 +262,12 @@ public class PlayerMovement : MonoBehaviour
 
         body.AddForce(pushDir * pushPower, ForceMode.Impulse);
     }
-    void OnGUI()
-    {
-        GUI.Label(new Rect(20, 130, 200, 20), "Health: " + Mathf.FloorToInt(playerStats.currentHealth) + " / " + playerStats.maxHealth);
-        GUI.Label(new Rect(20, 150, 200, 40), "Stamina: " + Mathf.FloorToInt(playerStats.currentStamina) + " / " + playerStats.maxStamina);
-        GUI.Label(new Rect(20, 170, 200, 60), $"Strength: {playerStats.strength}");
-        GUI.Label(new Rect(20, 190, 200, 80), $"Speed: {playerStats.runSpeed}");
-        GUI.Label(new Rect(20, 210, 200, 100), $"Range: {playerStats.range}");
-    }
+    //void OnGUI()
+    //{
+    //    GUI.Label(new Rect(20, 130, 200, 20), "Health: " + Mathf.FloorToInt(playerStats.currentHealth) + " / " + playerStats.maxHealth);
+    //    GUI.Label(new Rect(20, 150, 200, 40), "Stamina: " + Mathf.FloorToInt(playerStats.currentStamina) + " / " + playerStats.maxStamina);
+    //    GUI.Label(new Rect(20, 170, 200, 60), $"Strength: {playerStats.strength}");
+    //    GUI.Label(new Rect(20, 190, 200, 80), $"Speed: {playerStats.speed}");
+    //    GUI.Label(new Rect(20, 210, 200, 100), $"Range: {playerStats.range}");
+    //}
 }

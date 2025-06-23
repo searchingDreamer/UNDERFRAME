@@ -15,6 +15,14 @@ public class BoostItem : MonoBehaviour
     public BoostType boostType = BoostType.None;
 
     [SerializeField] int price = 500;
+
+    public bool isSold;
+
+    private void Start()
+    {
+        isSold = false;
+    }
+
     public string GetDisplayName()
     {
         return boostType.ToString();

@@ -8,14 +8,14 @@ public enum GameState
     Main,
     Shop,
     Menu,
-    Initializing
+    Loading
 }
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    private GameObject valuableItems;
+    [SerializeField] GameObject valuableItems;
     [SerializeField] float itemCollisionDelay = 1f;
 
     [SerializeField] Camera minimapCamera;
@@ -26,9 +26,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject p_lightItemMark; // p_ - prefab
     [SerializeField] GameObject p_heavyItemMark; // p_ - prefab
 
-    private int totalCash = 0;
+    [SerializeField] List<GameObject> engineComponents;
+
+    private int totalCash = 5000;
 
     private GameState state;
+
+    private int currentLevel = 0;
+    private bool isLevelFinished = false;
 
     void Awake()
     {
@@ -43,12 +48,17 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        state = GameState.Initializing;
+        state = GameState.Loading;
         DontDestroyOnLoad(player);
         DontDestroyOnLoad(fullmapCamera);
         DontDestroyOnLoad(minimapMarkersCanvas);
+        foreach (var engineComponent in engineComponents)
+        {
+            DontDestroyOnLoad(engineComponent);
+        }
+        DontDestroyOnLoad(valuableItems);
         SceneManager.sceneLoaded += OnSceneLoaded;
-        EndLevel();
+        ExitLocation();
     }
 
     // Update is called once per frame
@@ -90,7 +100,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void EndLevel()
+    public void ExitLocation()
     {
         if (state == GameState.Main)
         {
@@ -102,7 +112,7 @@ public class GameManager : MonoBehaviour
             SceneManager.LoadScene("underframe");
             state = GameState.Main;
         }
-        else if (state == GameState.Initializing)
+        else if (state == GameState.Loading)
         {
             SceneManager.LoadScene("underframe");
             state = GameState.Main;
@@ -113,17 +123,28 @@ public class GameManager : MonoBehaviour
     {
         if (scene.name == "underframe")
         {
-            UIManager.Instance.UpdateBankBalance(Bank.GetBalance());
-            valuableItems = GameObject.Find("Items").gameObject;
+            if (isLevelFinished) ToNextLevel();
+
+            UIManager.Instance.UpdateBankBalance(0);
             UIManager.Instance.ActivateMinimap(true);
-            StartCoroutine(ActivateCollisions(itemCollisionDelay));
-            InitializeItemMarkers();
+            Engine.Instance.gameObject.SetActive(true);
+            engineComponents[currentLevel].SetActive(true);
+            //StartCoroutine(ActivateCollisions(itemCollisionDelay));
+            //InitializeItemMarkers();
         }
         else if (scene.name == "shop")
         {
             totalCash += Bank.GetBalance();
+            
             UIManager.Instance.UpdateBankBalance(totalCash);
             UIManager.Instance.ActivateMinimap(false);
+            Engine.Instance.gameObject.SetActive(false);
+            engineComponents[currentLevel].SetActive(false);
+
+            if (engineComponents[currentLevel].GetComponent<EngineComponent>().isCollected)
+            {
+                isLevelFinished = true;
+            }
         }
        
         GameObject spawnPoint = GameObject.Find("spawnPoint");
@@ -137,11 +158,13 @@ public class GameManager : MonoBehaviour
 
     public bool TryBuy(BoostItem boostItem)
     {
+        if (boostItem.isSold == true) return true;
         int price = boostItem.GetPrice();
 
         if(totalCash - price >= 0)
         {
             totalCash -= price;
+            boostItem.isSold = true;
             UIManager.Instance.UpdateBankBalance(totalCash);
             return true;
         }
@@ -173,6 +196,42 @@ public class GameManager : MonoBehaviour
 
             marker.transform.SetParent(minimapMarkersCanvas.transform, false);
             item.SetMinimapMarker(marker);
+        }
+    }
+
+    private void LoadUnderframeScene()
+    {
+        // init all objects
+        Transform spawnPoints = GameObject.Find("ItemSpawnPoints").transform.Find($"Level{currentLevel}");
+
+        for(int i = 0; i < spawnPoints.childCount; i++)
+        {
+            ItemSpawnPoint itemSP = spawnPoints.GetChild(i).gameObject.GetComponent<ItemSpawnPoint>();
+            
+            itemSP.SpawnObject(valuableItems.transform);
+        }
+
+        StartCoroutine(ActivateCollisions(itemCollisionDelay));
+    }
+
+    // call when underframe scene loaded
+    private void ToNextLevel()
+    {
+        isLevelFinished = false;
+        engineComponents[currentLevel].gameObject.SetActive(false);
+        currentLevel += 1;
+        engineComponents[currentLevel].gameObject.SetActive(true);
+        LoadUnderframeScene();
+    }
+
+    private void DestoyItemsInTheBank()
+    {
+        List<GameObject> bankItems = Bank.GetItems();
+
+        for(int i = 0; i < bankItems.Count; i++)
+        {
+            Bank.GetItems().RemoveAt(i);
+            Destroy(bankItems[i]);
         }
     }
 }
