@@ -40,6 +40,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject minimap;
     [SerializeField] GameObject fullmap;
 
+    [Header("Mission")]
+    [SerializeField] TextMeshProUGUI missionText;
+    [SerializeField] TextMeshProUGUI missionShadow;
+
     private enum CrosshairStates { Normal, Enlarged, Normalizing, Enlarging };
     private CrosshairStates crosshairState = CrosshairStates.Normal;
 
@@ -269,5 +273,16 @@ public class UIManager : MonoBehaviour
             minimap.SetActive(true);
             fullmap.SetActive(false);
         }
+    }
+
+    public void ActivateMission(bool state)
+    {
+        missionText.gameObject.SetActive(state);
+    }
+
+    public void SetMissionText(string text)
+    {
+        missionText.text = text;
+        missionShadow.text = text;
     }
 }

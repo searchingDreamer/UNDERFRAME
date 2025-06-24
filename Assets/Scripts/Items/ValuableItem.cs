@@ -13,19 +13,27 @@ public class ValuableItem : MonoBehaviour
 {
     [SerializeField] int cost = 1000;
     [SerializeField] float fragility = 1f;
-    [SerializeField] float destroyDelay = 1f;
+    [SerializeField] float destroyDelay = 0.3f;
     [SerializeField] AudioSource audioSource;
     public AudioClip hitSound;
     public AudioClip destroySound;
+    public AudioClip baseSound;
+    public AudioClip extraSound;
 
     public event Action OnHit;
     public event Action OnDestroy;
-    
+    private Coroutine extraSoundCoroutine;
+
     private bool detectCollisions = false;
 
     private GameObject minimapMarker;
 
     [SerializeField] ItemType type;
+
+    private void Start()
+    {
+        
+    }
 
     void OnCollisionEnter(Collision collision)
     {
@@ -33,8 +41,6 @@ public class ValuableItem : MonoBehaviour
 
         Vector3 impulse = collision.impulse;
         float impactForce = impulse.magnitude / Time.fixedDeltaTime;
-
-        Debug.Log("Hit strength: " + impactForce);
 
         int damage = (int)(impactForce * fragility);
         if (damage > 0)
@@ -44,6 +50,7 @@ public class ValuableItem : MonoBehaviour
             {
                 cost = 0;
                 OnDestroy?.Invoke();
+                audioSource.Stop();
                 SoundOnDestroy();
                 StartCoroutine(DestroyAfterDelay());
             }
@@ -73,7 +80,7 @@ public class ValuableItem : MonoBehaviour
     private void SoundOnHit()
     {
         if(!audioSource || !hitSound) return;
-        float volume = UnityEngine.Random.Range(0.8f, 1f);
+        float volume = UnityEngine.Random.Range(0.5f, 0.7f);
         audioSource.PlayOneShot(hitSound, volume);
     }
 
@@ -102,5 +109,35 @@ public class ValuableItem : MonoBehaviour
     public ItemType GetItemType()
     {
         return type;
+    }
+
+    public void PlayExtraSound()
+    {
+        if(audioSource == null) return;
+        if(extraSound == null) return;
+        if (extraSoundCoroutine != null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(extraSound);
+        extraSoundCoroutine = StartCoroutine(PlayAfterDelay(extraSound.length));
+    }
+
+    private IEnumerator PlayAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (baseSound != null)
+        {
+            audioSource.Stop();
+            audioSource.clip = baseSound;
+            audioSource.Play();
+        }
+        extraSoundCoroutine = null;
+    }
+
+    private void OnEnable()
+    {
+        if (baseSound == null) return;
+        audioSource.clip = baseSound;
+        audioSource.Play();
     }
 }

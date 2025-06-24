@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class DoorController : MonoBehaviour
 {
-    [SerializeField] float closingDelay = 3f;
-    private float openTime = 2f;
+    [SerializeField] float closingDelay = 6f;
+    private float openTime = 1f;
     private bool isOpen = false;
 
     Quaternion initialRotation;
@@ -15,6 +15,9 @@ public class DoorController : MonoBehaviour
     private Coroutine closingCoroutine;
 
     [SerializeField] bool reverse;
+
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] List<AudioClip> rotatingSounds;
 
     private void Start()
     {
@@ -42,6 +45,8 @@ public class DoorController : MonoBehaviour
             targetRotation = Quaternion.AngleAxis(angle, Vector3.up) * initialRotation;
 
             if(openCoroutine != null) StopCoroutine(openCoroutine);
+            audioSource.clip = rotatingSounds[Random.Range(0, rotatingSounds.Count)];
+            audioSource.Play();
             openCoroutine = StartCoroutine(SmoothRotate());
             closingCoroutine = StartCoroutine(CloseTimer());
 
@@ -52,6 +57,8 @@ public class DoorController : MonoBehaviour
     private void Close()
     {
         targetRotation = initialRotation;
+        audioSource.clip = rotatingSounds[Random.Range(0, rotatingSounds.Count)];
+        audioSource.Play();
         openCoroutine = StartCoroutine(SmoothRotate());
         isOpen = false;
     }
@@ -60,17 +67,20 @@ public class DoorController : MonoBehaviour
     {
         float timer = Time.fixedDeltaTime;
         float t;
+        Quaternion initial = gameObject.transform.rotation;
         Quaternion target = targetRotation;
 
         while(timer < openTime)
         {
             t = timer / openTime;
 
-            gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, target, t);
+            gameObject.transform.rotation = Quaternion.Slerp(initial, target, t);
 
             timer += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
+
+        audioSource.Stop();
     }
 
     private IEnumerator CloseTimer()

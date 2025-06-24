@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public enum GameState
@@ -28,12 +29,16 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] List<GameObject> engineComponents;
 
-    private int totalCash = 5000;
+    [Header ("Post-Processing")]
+    [SerializeField] Volume volume;
+
+    private int totalCash = 0;
 
     private GameState state;
 
-    private int currentLevel = 0;
-    private bool isLevelFinished = false;
+    private int currentLevel = -1;
+    private bool isLevelFinished = true;
+    private bool isFirstLoad = true;
 
     void Awake()
     {
@@ -57,7 +62,9 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(engineComponent);
         }
         DontDestroyOnLoad(valuableItems);
+        DontDestroyOnLoad(volume);
         SceneManager.sceneLoaded += OnSceneLoaded;
+        Engine.Instance.OnComponentInserting += () => UIManager.Instance.ActivateMission(false);
         ExitLocation();
     }
 
@@ -121,23 +128,30 @@ public class GameManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        GameObject spawnPoint = null;
         if (scene.name == "underframe")
         {
             if (isLevelFinished) ToNextLevel();
+            valuableItems.SetActive(true);
 
             UIManager.Instance.UpdateBankBalance(0);
             UIManager.Instance.ActivateMinimap(true);
             Engine.Instance.gameObject.SetActive(true);
             engineComponents[currentLevel].SetActive(true);
-            //StartCoroutine(ActivateCollisions(itemCollisionDelay));
-            //InitializeItemMarkers();
+            if (isFirstLoad) spawnPoint = GameObject.Find("spawnPoint");
+            else spawnPoint = GameObject.Find("resumeSpawnPoint");
+
+            UIManager.Instance.ActivateMission(true);
         }
         else if (scene.name == "shop")
         {
             totalCash += Bank.GetBalance();
-            
+            Bank.DestroyItems();
+            valuableItems.SetActive(false);
+
             UIManager.Instance.UpdateBankBalance(totalCash);
             UIManager.Instance.ActivateMinimap(false);
+            UIManager.Instance.ActivateMission(false);
             Engine.Instance.gameObject.SetActive(false);
             engineComponents[currentLevel].SetActive(false);
 
@@ -145,9 +159,9 @@ public class GameManager : MonoBehaviour
             {
                 isLevelFinished = true;
             }
+            spawnPoint = GameObject.Find("spawnPoint");
         }
-       
-        GameObject spawnPoint = GameObject.Find("spawnPoint");
+
         player.transform.position = spawnPoint.transform.position;
     }
 
@@ -218,20 +232,36 @@ public class GameManager : MonoBehaviour
     private void ToNextLevel()
     {
         isLevelFinished = false;
-        engineComponents[currentLevel].gameObject.SetActive(false);
+        if(currentLevel != -1)
+            engineComponents[currentLevel].gameObject.SetActive(false);
         currentLevel += 1;
         engineComponents[currentLevel].gameObject.SetActive(true);
+        UIManager.Instance.SetMissionText($"Find {engineComponents[currentLevel].GetComponent<EngineComponent>().GetName()} ({currentLevel + 1}/12)");
+        DestroyItems();
         LoadUnderframeScene();
     }
 
-    private void DestoyItemsInTheBank()
-    {
-        List<GameObject> bankItems = Bank.GetItems();
+    //private void DestoyItemsInTheBank()
+    //{
+    //    List<GameObject> bankItems = Bank.GetItems();
 
-        for(int i = 0; i < bankItems.Count; i++)
+    //    for(int i = 0; i < bankItems.Count; i++)
+    //    {
+    //        Bank.GetItems().RemoveAt(i);
+    //        Destroy(bankItems[i]);
+    //    }
+    //}
+
+    private void DestroyItems()
+    {
+        for(int i = 0; i < valuableItems.transform.childCount; i++)
         {
-            Bank.GetItems().RemoveAt(i);
-            Destroy(bankItems[i]);
+            Destroy(valuableItems.transform.GetChild(i).gameObject);
         }
+    }
+
+    public int GetCurrentLevel()
+    {
+        return currentLevel;
     }
 }

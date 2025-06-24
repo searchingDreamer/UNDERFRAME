@@ -64,8 +64,13 @@ public class Bank : MonoBehaviour
         return balance;
     }
 
-    static public List<GameObject> GetItems()
+    static public void DestroyItems()
     {
-        return items;
+        for (int i = 0; i < items.Count; i++)
+        {
+            GameObject item = items[i];
+            items.RemoveAt(i);
+            Destroy(item);
+        }
     }
 }

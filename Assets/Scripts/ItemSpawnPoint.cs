@@ -23,6 +23,8 @@ public class ItemSpawnPoint : MonoBehaviour
         if (objectToSpawn != null)
         {
             GameObject obj = Instantiate(objectToSpawn, Vector3.zero, Quaternion.identity);
+            obj.transform.position = transform.position;
+            obj.transform.rotation = transform.rotation;
             obj.transform.SetParent(parent, false);
             return obj;
         }

@@ -96,9 +96,6 @@ public class Interaction : MonoBehaviour
 
                                 playerLook.mouseSensitivity *= weightEffect;
                                 playerStats.speed *= weightEffect;
-                                Debug.Log("weight effect: " + weightEffect);
-                                Debug.Log("sensetivity: " + playerLook.mouseSensitivity);
-                                Debug.Log("speed: " + playerStats.speed);
 
                                 heldRb.isKinematic = false;
                                 heldRb.useGravity = false;
@@ -125,6 +122,7 @@ public class Interaction : MonoBehaviour
                                 item.OnDestroy -= () => UIManager.Instance.ActivateItemInfo(false, false);
                                 item.OnDestroy += DropItem; // drop item when it destroys
                                 item.OnDestroy += () => UIManager.Instance.ActivateItemInfo(false, false);
+                                item.PlayExtraSound();
                             }
                             else
                             {
@@ -232,9 +230,6 @@ public class Interaction : MonoBehaviour
 
                                 playerLook.mouseSensitivity *= weightEffect;
                                 playerStats.speed *= weightEffect;
-                                Debug.Log("weight effect: " + weightEffect);
-                                Debug.Log("sensetivity: " + playerLook.mouseSensitivity);
-                                Debug.Log("speed: " + playerStats.speed);
 
                                 heldRb.isKinematic = false;
                                 heldRb.useGravity = false;
@@ -377,7 +372,7 @@ public class Interaction : MonoBehaviour
                 playerStats.maxHealth += 20; // +20
                 break;
             case BoostType.Speed:
-                playerStats.speed += 1;
+                playerStats.speed += 0.5f;
                 break;
         }
         Debug.Log($"Applied boost: {boost.boostType}");
